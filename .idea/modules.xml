@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/cy-zxing.iml" filepath="$PROJECT_DIR$/.idea/cy-zxing.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/cy-zxing.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/cy-zxing.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/zxinglib/cy-zxing.zxinglib.iml" filepath="$PROJECT_DIR$/.idea/modules/zxinglib/cy-zxing.zxinglib.iml" />
+    </modules>
+  </component>
+</project>
