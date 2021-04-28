@@ -1,6 +1,7 @@
 # ZXingLib
 
-[![](https://jitpack.io/v/Dkaishu/ZXingLib.svg)](https://jitpack.io/#Dkaishu/ZXingLib)
+[![](https://jitpack.io/v/zhuxu1/cy-zxing.svg)](https://jitpack.io/#zhuxu1/cy-zxing)
+
 
 快速集成：二维码扫描及生成
 
@@ -8,6 +9,15 @@
 - 二维码生成（支持是否带图标）
 - 可自定义扫描界面 UI   
 - 支持本地二维码图片解析
+
+
+
+### 更新日志
+## 2021-4-28 10:25:16 
+    -提升zxing版本(3.0.1→3.4.1)
+    -修改识别模块代码
+    -修复识别失败的bug
+
 
 ### 使用
 How to
@@ -26,7 +36,7 @@ To get the project into your build:
 - Step 2. Add the dependency
 
         dependencies {
-                compile 'com.github.Dkaishu:ZXingLib:V1.0.6'
+	        implementation 'com.github.zhuxu1:cy-zxing:Tag'
         }
 
 That's it! Add then:

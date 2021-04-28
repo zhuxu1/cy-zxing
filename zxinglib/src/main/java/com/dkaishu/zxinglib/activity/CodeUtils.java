@@ -6,6 +6,7 @@ import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.dkaishu.zxinglib.camera.BitmapLuminanceSource;
 import com.dkaishu.zxinglib.camera.CameraManager;
@@ -15,14 +16,18 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatReader;
+import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
+import java.util.EnumMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -30,12 +35,14 @@ import java.util.Vector;
  * 二维码扫描工具类
  */
 public class CodeUtils {
-    public static final String RESULT_TYPE    = "result_type";
-    public static final String RESULT_STRING  = "result_string";
-    public static final int    RESULT_SUCCESS = 1;
-    public static final int    RESULT_FAILED  = 2;
+    public static final String RESULT_TYPE = "result_type";
+    public static final String RESULT_STRING = "result_string";
+    public static final int RESULT_SUCCESS = 1;
+    public static final int RESULT_FAILED = 2;
 
     public static final String LAYOUT_ID = "layout_id";
+
+    public static final Map<DecodeHintType, Object> HINTS = new EnumMap<>(DecodeHintType.class);
 
     /**
      * 解析二维码图片工具类
@@ -43,59 +50,97 @@ public class CodeUtils {
      * @param analyzeCallback
      */
     public static void analyzeBitmap(String path, AnalyzeCallback analyzeCallback) {
+        Bitmap bitmap = BitmapFactory.decodeFile(path);
 
-        /**
-         * 首先判断图片的大小,若图片过大,则执行图片的裁剪操作,防止OOM
-         */
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true; // 先获取原大小
-        Bitmap mBitmap = BitmapFactory.decodeFile(path, options);
-        options.inJustDecodeBounds = false; // 获取新的大小
-
-        int sampleSize = (int) (options.outHeight / (float) 400);
-
-        if (sampleSize <= 0)
-            sampleSize = 1;
-        options.inSampleSize = sampleSize;
-        mBitmap = BitmapFactory.decodeFile(path, options);
-
-        MultiFormatReader multiFormatReader = new MultiFormatReader();
-
-        // 解码的参数
-        Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
-        // 可以解析的编码类型
-        Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
-        if (decodeFormats == null || decodeFormats.isEmpty()) {
-            decodeFormats = new Vector<BarcodeFormat>();
-
-            // 这里设置可扫描的类型，我这里选择了都支持
-            decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
-            decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
-            decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
-        }
-        hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
-        // 设置继续的字符编码格式为UTF8
-        // hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
-        // 设置解析配置参数
-        multiFormatReader.setHints(hints);
-
-        // 开始对图像资源解码
-        Result rawResult = null;
+        Result result = null;
+        RGBLuminanceSource source = null;
         try {
-            rawResult = multiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource(mBitmap))));
+            int width = bitmap.getWidth();
+            int height = bitmap.getHeight();
+            int[] pixels = new int[width * height];
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+            source = new RGBLuminanceSource(width, height, pixels);
+            result = new MultiFormatReader().decode(new BinaryBitmap(new HybridBinarizer(source)), HINTS);
+            Log.e("zhuxu", "analyze qrcode result is (succeed) \n" + result.getText());
+//            return result.getText();
         } catch (Exception e) {
             e.printStackTrace();
+            if (source != null) {
+                try {
+                    result = new MultiFormatReader().decode(new BinaryBitmap(new GlobalHistogramBinarizer(source)), HINTS);
+                    Log.e("zhuxu", "analyze qrcode result is (failed) \n" + result.getText());
+//                    return result.getText();
+                } catch (Throwable e2) {
+                    Log.e("zhuxu", "analyze qrcode result is (error) \n" + e2.getMessage());
+                    e2.printStackTrace();
+                }
+            }
+//            return null;
         }
 
-        if (rawResult != null) {
+        if (result != null) {
             if (analyzeCallback != null) {
-                analyzeCallback.onAnalyzeSuccess(mBitmap, rawResult.getText());
+                analyzeCallback.onAnalyzeSuccess(bitmap, result.getText());
             }
         } else {
             if (analyzeCallback != null) {
                 analyzeCallback.onAnalyzeFailed();
             }
         }
+
+
+//        /**
+//         * 首先判断图片的大小,若图片过大,则执行图片的裁剪操作,防止OOM
+//         */
+//        BitmapFactory.Options options = new BitmapFactory.Options();
+//        options.inJustDecodeBounds = true; // 先获取原大小
+//        Bitmap mBitmap = BitmapFactory.decodeFile(path, options);
+//        options.inJustDecodeBounds = false; // 获取新的大小
+//
+//        int sampleSize = (int) (options.outHeight / (float) 400);
+//
+//        if (sampleSize <= 0)
+//            sampleSize = 1;
+//        options.inSampleSize = sampleSize;
+//        mBitmap = BitmapFactory.decodeFile(path, options);
+//
+//        MultiFormatReader multiFormatReader = new MultiFormatReader();
+//
+//        // 解码的参数
+//        Hashtable<DecodeHintType, Object> hints = new Hashtable<DecodeHintType, Object>(2);
+//        // 可以解析的编码类型
+//        Vector<BarcodeFormat> decodeFormats = new Vector<BarcodeFormat>();
+//        if (decodeFormats == null || decodeFormats.isEmpty()) {
+//            decodeFormats = new Vector<BarcodeFormat>();
+//
+//            // 这里设置可扫描的类型，我这里选择了都支持
+//            decodeFormats.addAll(DecodeFormatManager.ONE_D_FORMATS);
+//            decodeFormats.addAll(DecodeFormatManager.QR_CODE_FORMATS);
+//            decodeFormats.addAll(DecodeFormatManager.DATA_MATRIX_FORMATS);
+//        }
+//        hints.put(DecodeHintType.POSSIBLE_FORMATS, decodeFormats);
+//        // 设置继续的字符编码格式为UTF8
+//        // hints.put(DecodeHintType.CHARACTER_SET, "UTF8");
+//        // 设置解析配置参数
+//        multiFormatReader.setHints(hints);
+//
+//        // 开始对图像资源解码
+//        Result rawResult = null;
+//        try {
+//            rawResult = multiFormatReader.decodeWithState(new BinaryBitmap(new HybridBinarizer(new BitmapLuminanceSource(mBitmap))));
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        if (rawResult != null) {
+//            if (analyzeCallback != null) {
+//                analyzeCallback.onAnalyzeSuccess(mBitmap, rawResult.getText());
+//            }
+//        } else {
+//            if (analyzeCallback != null) {
+//                analyzeCallback.onAnalyzeFailed();
+//            }
+//        }
     }
 
     /**
@@ -117,7 +162,7 @@ public class CodeUtils {
             int offsetX = w / 2;
             int offsetY = h / 2;
 
-            int scaleWidth  = 0;
+            int scaleWidth = 0;
             int scaleHeight = 0;
             if (scaleLogo != null) {
                 scaleWidth = scaleLogo.getWidth();
@@ -132,7 +177,7 @@ public class CodeUtils {
             //设置空白边距的宽度
             hints.put(EncodeHintType.MARGIN, 0);
             BitMatrix bitMatrix = new QRCodeWriter().encode(text, BarcodeFormat.QR_CODE, w, h, hints);
-            int[]     pixels    = new int[w * h];
+            int[] pixels = new int[w * h];
             for (int y = 0; y < h; y++) {
                 for (int x = 0; x < w; x++) {
                     if (x >= offsetX && x < offsetX + scaleWidth && y >= offsetY && y < offsetY + scaleHeight) {
@@ -166,8 +211,8 @@ public class CodeUtils {
 
     private static Bitmap getScaleLogo(Bitmap logo, int w, int h) {
         if (logo == null) return null;
-        Matrix matrix      = new Matrix();
-        float  scaleFactor = Math.min(w * 1.0f / 5 / logo.getWidth(), h * 1.0f / 5 / logo.getHeight());
+        Matrix matrix = new Matrix();
+        float scaleFactor = Math.min(w * 1.0f / 5 / logo.getWidth(), h * 1.0f / 5 / logo.getHeight());
         matrix.postScale(scaleFactor, scaleFactor);
         Bitmap result = Bitmap.createBitmap(logo, 0, 0, logo.getWidth(), logo.getHeight(), matrix, true);
         return result;

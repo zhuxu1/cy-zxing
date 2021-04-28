@@ -25,5 +25,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.android.support:appcompat-v7:26.+'
-    compile files('libs/core_3.0.1.jar')
+    compile files('libs/core-3.4.1.jar')
+//    compile files('libs/core_3.0.1.jar')
 }
