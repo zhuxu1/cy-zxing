@@ -10,7 +10,8 @@
 - 可自定义扫描界面 UI   
 - 支持本地二维码图片解析
 
-
+这是二次维护后的新库，
+[点击查看原库地址](https://github.com/Dkaishu/ZXingLib.git "Dkaishu / ZXingLib")
 
 ### 更新日志
 ## 2021-4-28 10:25:16 
@@ -36,7 +37,7 @@ To get the project into your build:
 - Step 2. Add the dependency
 
         dependencies {
-	        implementation 'com.github.zhuxu1:cy-zxing:Tag'
+	        implementation 'com.github.zhuxu1:cy-zxing:-SNAPSHOT'
         }
 
 That's it! Add then:
