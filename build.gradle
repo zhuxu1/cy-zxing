@@ -10,6 +10,7 @@ buildscript {
 
         mavenLocal()
 
+        jcenter()
         google()
         maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
         mavenCentral()
@@ -33,6 +34,7 @@ allprojects {
 
         mavenLocal()
 
+        jcenter()
         google()
         maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
         mavenCentral()
