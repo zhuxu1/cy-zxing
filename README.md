@@ -37,7 +37,7 @@ To get the project into your build:
 - Step 2. Add the dependency
 
         dependencies {
-	        implementation 'com.github.zhuxu1:cy-zxing:1.3'
+	        implementation 'com.github.zhuxu1:cy-zxing:1.4.1'
         }
 
 That's it! Add then:
